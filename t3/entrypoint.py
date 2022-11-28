@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from argparse import Namespace
 from typing import Callable, List, Optional
 
-from t3.arguments import CMD1, CMD2, CMDS, get_default_arguments
+from t3.arguments import get_default_arguments
+from t3.context.context import run_context
 from t3.logging.logging import (
     SEVERITY_NAME_DEBUG,
     logger,
@@ -13,27 +13,11 @@ from t3.logging.logging import (
 )
 
 
-def cmd1_main(args: Namespace, printer: Callable[..., None] = print) -> int:
-    assert args is not None
-    assert printer is not None
-    raise NotImplementedError
-
-
-def cmd2_main(args: Namespace, printer: Callable[..., None] = print) -> int:
-    assert args is not None
-    assert printer is not None
-    raise NotImplementedError
-
-
 def main(
     cmdline: Optional[List[str]] = None,
     printer: Callable[..., None] = print,
 ) -> int:
     args = get_default_arguments(cmdline)
-
-    if not args.cmd:
-        printer("The command does not exist")
-        return 1
 
     if args.default_logging and args.simple_logging:
         printer(
@@ -41,17 +25,27 @@ def main(
         )
         return 1
 
-    cmd = args.cmd
     default_logging = args.default_logging
     simple_logging = args.simple_logging
     severity = args.severity
+    fullscreen = args.fullscreen
+    resizable = args.resizable
+    fps = args.fps
+    antialiasing = args.antialiasing
+    vsync = args.vsync
+    center_window = args.center_window
     debug = args.debug
     verbose = args.verbose
 
-    assert cmd in CMDS
     assert isinstance(default_logging, bool)
     assert isinstance(simple_logging, bool)
     assert isinstance(severity, str)
+    assert isinstance(fullscreen, bool)
+    assert isinstance(resizable, bool)
+    assert isinstance(fps, int)
+    assert isinstance(antialiasing, bool)
+    assert isinstance(vsync, bool)
+    assert isinstance(center_window, bool)
     assert isinstance(debug, bool)
     assert isinstance(verbose, int)
 
@@ -68,12 +62,16 @@ def main(
     logger.debug(f"Arguments: {args}")
 
     try:
-        if cmd == CMD1:
-            return cmd1_main(args, printer=printer)
-        elif cmd == CMD2:
-            return cmd2_main(args, printer=printer)
-        else:
-            assert False, "Inaccessible section"
+        return run_context(
+            fullscreen=fullscreen,
+            resizable=resizable,
+            fps=fps,
+            antialiasing=antialiasing,
+            vsync=vsync,
+            center_window=center_window,
+            debug=debug,
+            verbose=verbose,
+        )
     except BaseException as e:
         logger.exception(e)
         return 1

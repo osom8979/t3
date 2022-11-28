@@ -1,34 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from argparse import REMAINDER, ArgumentParser, Namespace, RawDescriptionHelpFormatter
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 from functools import lru_cache
 from typing import Final, List, Optional
 
 from t3.logging.logging import SEVERITIES, SEVERITY_NAME_INFO
-
-CMD_CLIENT: Final[str] = "client"
-CMD_MODULES: Final[str] = "modules"
-CMD_SERVER: Final[str] = "server"
 
 PROG: Final[str] = "t3"
 DESCRIPTION: Final[str] = "Turn The Tricks"
 EPILOG: Final[str] = ""
 
 DEFAULT_SEVERITY: Final[str] = SEVERITY_NAME_INFO
-
-CMD1 = "cmd1"
-CMD2 = "cmd2"
-CMDS = (CMD1, CMD2)
-
-CMD1_HELP: Final[str] = ""
-CMD1_EPILOG: Final[str] = ""
-
-CMD2_HELP: Final[str] = ""
-CMD2_EPILOG: Final[str] = ""
-
-DEFAULT_BIND: Final[str] = "0.0.0.0"
-DEFAULT_PORT: Final[int] = 8080
-DEFAULT_TIMEOUT: Final[float] = 1.0
+DEFAULT_FPS: Final[int] = 60
 
 
 @lru_cache
@@ -37,69 +20,6 @@ def version() -> str:
     from t3 import __version__
 
     return __version__
-
-
-def add_cmd1_parser(subparsers) -> None:
-    # noinspection SpellCheckingInspection
-    parser = subparsers.add_parser(
-        name=CMD1,
-        help=CMD1_HELP,
-        formatter_class=RawDescriptionHelpFormatter,
-        epilog=CMD1_EPILOG,
-    )
-    assert isinstance(parser, ArgumentParser)
-
-    parser.add_argument(
-        "--bind",
-        "-b",
-        default=DEFAULT_BIND,
-        metavar="bind",
-        help=f"Bind address (default: '{DEFAULT_BIND}')",
-    )
-    parser.add_argument(
-        "--port",
-        "-p",
-        default=DEFAULT_PORT,
-        metavar="port",
-        help=f"Port number (default: '{DEFAULT_PORT}')",
-    )
-    parser.add_argument(
-        "--timeout",
-        "-t",
-        default=DEFAULT_TIMEOUT,
-        type=float,
-        help=f"Request timeout in seconds (default: {DEFAULT_TIMEOUT})",
-    )
-
-
-def add_cmd2_parser(subparsers) -> None:
-    # noinspection SpellCheckingInspection
-    parser = subparsers.add_parser(
-        name=CMD2,
-        help=CMD2_HELP,
-        formatter_class=RawDescriptionHelpFormatter,
-        epilog=CMD2_EPILOG,
-    )
-    assert isinstance(parser, ArgumentParser)
-
-    parser.add_argument(
-        "--config",
-        "-c",
-        default=None,
-        metavar="file",
-        help="Configuration file path",
-    )
-    parser.add_argument(
-        "module",
-        default=None,
-        nargs="?",
-        help="Module name",
-    )
-    parser.add_argument(
-        "opts",
-        nargs=REMAINDER,
-        help="Arguments of module",
-    )
 
 
 def default_argument_parser() -> ArgumentParser:
@@ -136,6 +56,44 @@ def default_argument_parser() -> ArgumentParser:
         default=False,
         help="Enable debugging mode and change logging severity to 'DEBUG'",
     )
+
+    parser.add_argument(
+        "--fullscreen",
+        action="store_true",
+        default=False,
+        help="Enable fullscreen mode",
+    )
+    parser.add_argument(
+        "--resizable",
+        action="store_true",
+        default=False,
+        help="Enable resizable mode",
+    )
+    parser.add_argument(
+        "--fps",
+        type=int,
+        default=DEFAULT_FPS,
+        help="Frames per second",
+    )
+    parser.add_argument(
+        "--antialiasing",
+        action="store_true",
+        default=False,
+        help="Enable antialiasing mode",
+    )
+    parser.add_argument(
+        "--vsync",
+        action="store_true",
+        default=False,
+        help="Enable vsync mode",
+    )
+    parser.add_argument(
+        "--center-window",
+        action="store_true",
+        default=False,
+        help="Center the window position",
+    )
+
     parser.add_argument(
         "--verbose",
         "-v",
@@ -150,9 +108,6 @@ def default_argument_parser() -> ArgumentParser:
         version=version(),
     )
 
-    subparsers = parser.add_subparsers(dest="cmd")
-    add_cmd1_parser(subparsers)
-    add_cmd2_parser(subparsers)
     return parser
 
 
