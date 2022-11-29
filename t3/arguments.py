@@ -64,34 +64,16 @@ def default_argument_parser() -> ArgumentParser:
         help="Enable fullscreen mode",
     )
     parser.add_argument(
-        "--resizable",
-        action="store_true",
-        default=False,
-        help="Enable resizable mode",
-    )
-    parser.add_argument(
         "--fps",
         type=int,
         default=DEFAULT_FPS,
         help="Frames per second",
     )
     parser.add_argument(
-        "--antialiasing",
-        action="store_true",
-        default=False,
-        help="Enable antialiasing mode",
-    )
-    parser.add_argument(
         "--vsync",
         action="store_true",
         default=False,
         help="Enable vsync mode",
-    )
-    parser.add_argument(
-        "--center-window",
-        action="store_true",
-        default=False,
-        help="Center the window position",
     )
 
     parser.add_argument(

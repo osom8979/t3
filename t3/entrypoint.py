@@ -29,11 +29,8 @@ def main(
     simple_logging = args.simple_logging
     severity = args.severity
     fullscreen = args.fullscreen
-    resizable = args.resizable
     fps = args.fps
-    antialiasing = args.antialiasing
     vsync = args.vsync
-    center_window = args.center_window
     debug = args.debug
     verbose = args.verbose
 
@@ -41,11 +38,8 @@ def main(
     assert isinstance(simple_logging, bool)
     assert isinstance(severity, str)
     assert isinstance(fullscreen, bool)
-    assert isinstance(resizable, bool)
     assert isinstance(fps, int)
-    assert isinstance(antialiasing, bool)
     assert isinstance(vsync, bool)
-    assert isinstance(center_window, bool)
     assert isinstance(debug, bool)
     assert isinstance(verbose, int)
 
@@ -62,19 +56,21 @@ def main(
     logger.debug(f"Arguments: {args}")
 
     try:
-        return run_context(
+        run_context(
             fullscreen=fullscreen,
-            resizable=resizable,
+            resizable=False,
             fps=fps,
-            antialiasing=antialiasing,
+            antialiasing=True,
             vsync=vsync,
-            center_window=center_window,
+            center_window=False,
             debug=debug,
             verbose=verbose,
         )
     except BaseException as e:
         logger.exception(e)
         return 1
+    else:
+        return 0
 
 
 if __name__ == "__main__":
