@@ -3,10 +3,7 @@
 from overrides import overrides
 from typing import Final, Tuple
 
-from arcade import (
-    Window,
-    set_background_color,
-)
+from arcade import Window, set_background_color
 from arcade import run as arcade_run
 from arcade.key import LEFT as ARCADE_KEY_LEFT
 from arcade.key import RIGHT as ARCADE_KEY_RIGHT
@@ -25,8 +22,6 @@ SCREEN_HEIGHT: Final[int] = 800
 SCREEN_TITLE: Final[str] = "Turn The Tricks"
 
 BACKGROUND_COLOR: Final[Tuple[int, int, int, int]] = (0x0c, 0x1b, 0x23, 0xFF)
-
-GOWUN_DODUM_FONT: Final[str] = "Gowun Dodum"
 
 
 # def rotate_counterclockwise(shape):
@@ -112,14 +107,6 @@ class Context(Window):
     def on_draw(self) -> None:
         self.clear()
         self._game.draw()
-
-        # draw_text(
-        #     text=str(floor(self._total_delta)),
-        #     start_x=0,
-        #     start_y=0,
-        #     color=arcade.color.RED,
-        #     font_name=GOWUN_DODUM_FONT,
-        # )
 
     def run(self) -> None:
         arcade_run()

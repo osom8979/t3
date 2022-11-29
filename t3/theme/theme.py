@@ -26,3 +26,10 @@ class Theme:
     block_j_clear: ColorTuple
     block_s_clear: ColorTuple
     block_z_clear: ColorTuple
+
+    font_name: str
+    title_size: int
+    subtitle_size: int
+
+    border_width: int
+    margin_width: int

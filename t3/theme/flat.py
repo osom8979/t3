@@ -23,6 +23,7 @@ from t3.color.palette.flat_ui import (
     SILVER,
     ASBESTOS,
 )
+from t3.variables.fonts import GOWUN_DODUM_FONT
 
 
 class FlatTheme(Theme):
@@ -47,6 +48,13 @@ class FlatTheme(Theme):
     block_j_clear = ORANGE
     block_s_clear = PUMPKIN
     block_z_clear = POMEGRANATE
+
+    font_name = GOWUN_DODUM_FONT
+    title_size = 24
+    subtitle_size = 12
+
+    border_width = 1
+    margin_width = 10
 
     reserve1 = CONCRETE
     reserve2 = SILVER

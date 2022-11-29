@@ -26,6 +26,8 @@ class Board:
         self._block_width = block_width
         self._block_height = block_height
         self._block_margin = block_margin
+        self._offset_x = 0
+        self._offset_y = 0
 
         self._matrix = [[0 for _x in range(cols)] for _y in range(rows)]
 
@@ -67,6 +69,18 @@ class Board:
         return self._rows
 
     @property
+    def block_width(self) -> int:
+        return self._block_width
+
+    @property
+    def block_height(self) -> int:
+        return self._block_height
+
+    @property
+    def block_margin(self) -> int:
+        return self._block_margin
+
+    @property
     def width(self) -> int:
         margin = self._block_margin
         width = self._block_width
@@ -88,13 +102,35 @@ class Board:
     def half_height(self) -> int:
         return self.height // 2
 
+    @property
+    def left(self) -> int:
+        return self._offset_x
+
+    @property
+    def right(self) -> int:
+        return self._offset_x + self.width
+
+    @property
+    def top(self) -> int:
+        return self._offset_y + self.height
+
+    @property
+    def bottom(self) -> int:
+        return self._offset_y
+
     def as_sprite(self, col: int, row: int) -> Sprite:
         return self._sprites[self._cols * row + col]
 
     def set_texture(self, col: int, row: int, texture_index: int) -> None:
         self.as_sprite(col, row).set_texture(texture_index)
 
+    def set_matrix(self, matrix: Matrix) -> None:
+        self._matrix = matrix
+
     def update_offset(self, offset_x: int, offset_y: int) -> None:
+        self._offset_x = offset_x
+        self._offset_y = offset_y
+
         for row in range(self._rows):
             for col in range(self._cols):
                 center = self.measure_block_center(col, row)

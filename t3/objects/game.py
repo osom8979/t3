@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from math import floor
-from typing import List, Optional
+from typing import Optional
+
+from arcade import draw_text, draw_line
 
 from t3.objects.block import create_block_textures
 from t3.objects.board import Board
+from t3.objects.history import History
+from t3.objects.matrix import Matrix
+from t3.stages.stages import create_stages
 from t3.theme.flat import FlatTheme
 from t3.theme.theme import Theme
 from t3.variables.block import BLOCK_WIDTH, BLOCK_HEIGHT, BLOCK_MARGIN
@@ -37,10 +42,6 @@ class Game:
             self._block_textures,
         )
 
-        # TODO: initialize matrix
-
-        self._board.update_textures()
-
         self._total_delta = 0.0
         self._drop_delta = 0.0
         self._drop_threshold = 1.0
@@ -48,36 +49,24 @@ class Game:
         self._game_over = False
         self._paused = False
 
-        self._block_history: List[int] = list()
+        self._cursor_block: Optional[Matrix] = None
         self._cursor_x = 0
 
-    # def _draw_current_block(self) -> None:
-    #     if not self._current_block:
-    #         return
-    #
-    #     for y in range(len(self._current_block)):
-    #         for x in range(len(self._current_block[0])):
-    #             value = self._current_block[y][x]
-    #             if value == E:
-    #                 continue
-    #
-    #             color = COLORS[self._current_block[y][x]]
-    #             center = calc_block_center(
-    #                 x + self._current_block_x,
-    #                 y + self._current_block_y,
-    #                 BLOCK_WIDTH,
-    #                 BLOCK_HEIGHT,
-    #                 BLOCK_MARGIN,
-    #                 )
-    #             center_x = center[0]
-    #             center_y = SCREEN_HEIGHT - center[1]
-    #             draw_rectangle_filled(
-    #                 center_x,
-    #                 center_y,
-    #                 BLOCK_WIDTH,
-    #                 BLOCK_HEIGHT,
-    #                 color,
-    #             )
+        self._stages = create_stages()
+        self._stage = 0
+
+        self._board.set_matrix(self._stages[0].board)
+        self._board.update_textures()
+
+        self._history = History(
+            4,
+            self._stages[0].history,
+            block_width,
+            block_height,
+            block_margin,
+            4,
+            self._block_textures,
+        )
 
     def resize(self, width: float, height: float) -> None:
         half_width = width // 2
@@ -86,14 +75,61 @@ class Game:
         y = floor(half_height - self._board.half_height)
         offset_x = x if x > 0 else 0
         offset_y = y if y > 0 else 0
+
         self._board.update_offset(offset_x, offset_y)
+        self._history.update_offset(
+            self._board.right + self._theme.margin_width,
+            self._board.bottom,
+        )
 
     def update(self, delta_time: float) -> None:
         self._total_delta += delta_time
 
+    def _draw_border(self) -> None:
+        left = self._board.left - self._board.block_margin
+        right = self._board.right + self._board.block_margin
+        top = self._board.top - self._board.block_margin
+        bottom = self._board.bottom + self._board.block_margin
+
+        draw_line(
+            start_x=left,
+            start_y=top,
+            end_x=left,
+            end_y=bottom,
+            color=self._theme.foreground,
+            line_width=self._theme.border_width,
+        )
+
+        draw_line(
+            start_x=right,
+            start_y=top,
+            end_x=right,
+            end_y=bottom,
+            color=self._theme.foreground,
+            line_width=self._theme.border_width,
+        )
+
+    def _draw_right_panel(self) -> None:
+        x = self._board.right + self._theme.margin_width
+        top = self._board.top - self._board.block_margin
+
+        draw_text(
+            text=f"STAGE {self._stage}",
+            start_x=x + (self._board.block_margin * 2),
+            start_y=top,
+            color=self._theme.foreground,
+            font_size=self._theme.subtitle_size,
+            font_name=self._theme.font_name,
+            bold=True,
+            anchor_x="left",
+            anchor_y="top",
+        )
+
     def draw(self):
         self._board.draw()
-        # self._draw_current_block()
+        self._draw_border()
+        self._draw_right_panel()
+        self._history.draw()
 
     # def new_stone(self):
     #     self._current_block = choice(list(BLOCKS.values()))
