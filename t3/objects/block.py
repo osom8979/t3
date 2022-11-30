@@ -112,7 +112,7 @@ BLOCK_ZC: Final[Matrix] = [
 
 
 def is_active_block(v: int) -> bool:
-    return v != N and v != E and v != D
+    return v != N and v != E
 
 
 def create_block_texture(

@@ -6,6 +6,7 @@ from t3.color.color_tuple import ColorTuple
 class Theme:
     background: ColorTuple
     foreground: ColorTuple
+    accent: ColorTuple
 
     empty: ColorTuple
 

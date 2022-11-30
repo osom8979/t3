@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
 from math import floor
-from typing import Optional
+from typing import Optional, Tuple
 
-from arcade import draw_text, draw_line
+from arcade import draw_text, draw_line, draw_rectangle_outline
 
-from t3.objects.block import N, create_block_textures, rotate_clockwise
+from t3.objects.block import (
+    Matrix,
+    create_block_textures,
+    rotate_clockwise,
+    is_active_block,
+)
 from t3.objects.board import Board
 from t3.objects.history import History
-from t3.objects.matrix import Matrix
 from t3.stages.stages import create_stages
 from t3.theme.flat import FlatTheme
 from t3.theme.theme import Theme
@@ -49,10 +54,13 @@ class Game:
         self._game_over = False
         self._paused = False
 
-        self._cursor_matrix: Optional[Matrix] = None
         self._cursor_board: Optional[Board] = None
         self._cursor_x = 0
         self._cursor_y = 0
+
+        self._drop_matrix: Optional[Matrix] = None
+        self._drop_x = 0
+        self._drop_y = 0
 
         self._stages = create_stages()
         self._stage = 0
@@ -135,11 +143,41 @@ class Game:
         self._draw_border()
         self._draw_right_panel()
         self._history.draw()
-        self._cursor_board.draw()
+
+        if self._cursor_board:
+            self._cursor_board.draw()
+
+        if self._drop_matrix is not None:
+            self._draw_drop_matrix()
+
+    def _draw_drop_matrix(self) -> None:
+        assert self._drop_matrix is not None
+
+        left = self._board.left
+        bottom = self._board.bottom
+
+        for row in range(len(self._drop_matrix)):
+            for col in range(len(self._drop_matrix[0])):
+                value = self._drop_matrix[row][col]
+                if not is_active_block(value):
+                    continue
+
+                x = self._drop_x + col
+                y = self._drop_y + row
+                center = self._board.measure_block_center(x, y)
+                width = self._board.block_width
+                height = self._board.block_height
+
+                draw_rectangle_outline(
+                    left + center[0],
+                    bottom + center[1],
+                    width,
+                    height,
+                    self._theme.accent,
+                )
 
     def next_block(self) -> None:
         self._cursor_board = self._history.pop()
-        self._cursor_matrix = self._cursor_board.matrix
 
         half_cols = self._board.cols // 2
         half_cursor_block_cols = self._cursor_board.cols // 2
@@ -176,6 +214,15 @@ class Game:
         if not self._board.check_collision(cursor_matrix, next_x, self._cursor_y):
             self._cursor_x = next_x
             self.update_cursor()
+            hard_drop_position = self.get_hard_drop_position()
+            if hard_drop_position is not None:
+                self._drop_matrix = deepcopy(self._cursor_board.matrix)
+                self._drop_x = hard_drop_position[0]
+                self._drop_y = hard_drop_position[1]
+            else:
+                self._drop_matrix = None
+                self._drop_x = 0
+                self._drop_y = 0
 
     def rotate(self):
         rotated_block = rotate_clockwise(self._cursor_board.matrix)
@@ -191,29 +238,14 @@ class Game:
             self._cursor_x = next_x
             self.update_cursor()
 
-    # def drop(self):
-    #     if self._game_over:
-    #         return
-    #
-    #     if self._paused:
-    #         return
-    #
-    #     self._current_block_y += 1
-    #     if self._board.check_collision(self._current_block, (self._current_block_x, self._current_block_y)):
-    #         self._board.join_matrix(self._current_block, (self._current_block_x, self._current_block_y))
-    #         while True:
-    #             for i, row in enumerate(self._board[:-1]):
-    #                 if 0 not in row:
-    #                     self._board = remove_row(self._board, i)
-    #                     break
-    #             else:
-    #                 break
-    #         self._board.update()
-    #         self.new_stone()
-
-    # def update_drop(self, delta_time: float) -> None:
-    #     self._drop_delta += delta_time
-    #     if self._drop_delta >= self._drop_threshold:
-    #         self._drop_delta %= self._drop_threshold
-    #         assert self._drop_delta < self._drop_threshold
-    #         self.drop()
+    def get_hard_drop_position(self) -> Optional[Tuple[int, int]]:
+        cursor_matrix = self._cursor_board.matrix
+        x = self._cursor_x
+        max_y = self._board.rows - self._cursor_board.rows
+        for y in range(self._cursor_y, max_y + 1, 1):
+            if self._board.check_intersection(cursor_matrix, x, y):
+                if self._board.check_insertable(cursor_matrix, x, y):
+                    return x, y
+                else:
+                    return None
+        return None

@@ -29,6 +29,7 @@ from t3.variables.fonts import GOWUN_DODUM_FONT
 class FlatTheme(Theme):
     background = MIDNIGHT_BLUE
     foreground = CLOUDS
+    accent = SILVER
 
     empty = WET_ASPHALT
     block_disable = ASBESTOS
@@ -57,4 +58,3 @@ class FlatTheme(Theme):
     margin_width = 10
 
     reserve1 = CONCRETE
-    reserve2 = SILVER

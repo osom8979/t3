@@ -203,5 +203,33 @@ class Board:
                     return True
         return False
 
+    def check_intersection(self, shape: Matrix, offset_x: int, offset_y: int) -> bool:
+        for row, line in enumerate(shape):
+            for col, val in enumerate(line):
+                if not is_active_block(val):
+                    continue
+                board_value = self._matrix[row + offset_y][col + offset_x]
+                if not is_active_block(board_value):
+                    return False
+        return True
+
+    def check_insertable(self, shape: Matrix, offset_x: int, offset_y: int) -> bool:
+        for col in range(len(shape[0])):
+            col_top = False
+            for row in range(len(shape) - 1, -1, -1):
+                val = shape[row][col]
+                if not col_top:
+                    if is_active_block(val):
+                        col_top = True
+                    continue
+
+                if is_active_block(val):
+                    continue
+
+                board_value = self._matrix[row + offset_y][col + offset_x]
+                if is_active_block(board_value):
+                    return False
+        return True
+
     def draw(self) -> None:
         self._sprites.draw()
