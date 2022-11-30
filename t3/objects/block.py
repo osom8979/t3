@@ -13,8 +13,10 @@ from t3.theme.theme import Theme
 
 @unique
 class BlockIndex(Enum):
-    e = 0
+    n = 0
+    e = auto()
     d = auto()
+
     i = auto()
     o = auto()
     t = auto()
@@ -22,6 +24,7 @@ class BlockIndex(Enum):
     j = auto()
     s = auto()
     z = auto()
+
     ic = auto()
     oc = auto()
     tc = auto()
@@ -31,8 +34,10 @@ class BlockIndex(Enum):
     zc = auto()
 
 
+N: Final[int] = BlockIndex.n.value  # None
 E: Final[int] = BlockIndex.e.value  # Empty
 D: Final[int] = BlockIndex.d.value  # Disable
+
 I: Final[int] = BlockIndex.i.value  # noqa
 O: Final[int] = BlockIndex.o.value  # noqa
 T: Final[int] = BlockIndex.t.value
@@ -40,6 +45,7 @@ L: Final[int] = BlockIndex.l.value
 J: Final[int] = BlockIndex.j.value
 S: Final[int] = BlockIndex.s.value
 Z: Final[int] = BlockIndex.z.value
+
 IC: Final[int] = BlockIndex.ic.value
 OC: Final[int] = BlockIndex.oc.value
 TC: Final[int] = BlockIndex.tc.value
@@ -47,28 +53,6 @@ LC: Final[int] = BlockIndex.lc.value
 JC: Final[int] = BlockIndex.jc.value
 SC: Final[int] = BlockIndex.sc.value
 ZC: Final[int] = BlockIndex.zc.value
-
-BLOCK_NAME_TO_NUMBER: Final[Dict[str, int]] = {
-    "E": E,
-    "D": D,
-    "I": I,
-    "O": O,
-    "T": T,
-    "L": L,
-    "J": J,
-    "S": S,
-    "Z": Z,
-    "IC": IC,
-    "OC": OC,
-    "TC": TC,
-    "LC": LC,
-    "JC": JC,
-    "SC": SC,
-    "ZC": ZC,
-}
-BLOCK_NUMBER_TO_NAME: Final[Dict[int, str]] = {
-    v: k for k, v in BLOCK_NAME_TO_NUMBER.items()
-}
 
 BLOCK_I: Final[Matrix] = [
     [I, I, I, I],
@@ -79,23 +63,23 @@ BLOCK_O: Final[Matrix] = [
 ]
 BLOCK_T: Final[Matrix] = [
     [T, T, T],
-    [0, T, 0],
+    [N, T, N],
 ]
 BLOCK_L: Final[Matrix] = [
-    [0, 0, L],
+    [N, N, L],
     [L, L, L],
 ]
 BLOCK_J: Final[Matrix] = [
-    [J, 0, 0],
+    [J, N, N],
     [J, J, J],
 ]
 BLOCK_S: Final[Matrix] = [
-    [0, S, S],
-    [S, S, 0],
+    [N, S, S],
+    [S, S, N],
 ]
 BLOCK_Z: Final[Matrix] = [
-    [Z, Z, 0],
-    [0, Z, Z],
+    [Z, Z, N],
+    [N, Z, Z],
 ]
 
 BLOCK_IC: Final[Matrix] = [
@@ -107,41 +91,28 @@ BLOCK_OC: Final[Matrix] = [
 ]
 BLOCK_TC: Final[Matrix] = [
     [TC, TC, TC],
-    [0, TC, 0],
+    [N, TC, N],
 ]
 BLOCK_LC: Final[Matrix] = [
-    [0, 0, LC],
+    [N, N, LC],
     [LC, LC, LC],
 ]
 BLOCK_JC: Final[Matrix] = [
-    [JC, 0, 0],
+    [JC, N, N],
     [JC, JC, JC],
 ]
 BLOCK_SC: Final[Matrix] = [
-    [0, SC, SC],
-    [SC, SC, 0],
+    [N, SC, SC],
+    [SC, SC, N],
 ]
 BLOCK_ZC: Final[Matrix] = [
-    [ZC, ZC, 0],
-    [0, ZC, ZC],
+    [ZC, ZC, N],
+    [N, ZC, ZC],
 ]
 
-BLOCKS: Final[Dict[int, Matrix]] = {
-    I: BLOCK_I,
-    O: BLOCK_O,
-    T: BLOCK_T,
-    L: BLOCK_L,
-    J: BLOCK_J,
-    S: BLOCK_S,
-    Z: BLOCK_Z,
-    IC: BLOCK_IC,
-    OC: BLOCK_OC,
-    TC: BLOCK_TC,
-    LC: BLOCK_LC,
-    JC: BLOCK_JC,
-    SC: BLOCK_SC,
-    ZC: BLOCK_ZC,
-}
+
+def is_active_block(v: int) -> bool:
+    return v != N and v != E and v != D
 
 
 def create_block_texture(
@@ -159,6 +130,7 @@ def create_block_texture(
 
 def create_block_textures(width: int, height: int, theme: Theme) -> Dict[int, Texture]:
     return {
+        N: create_block_texture("N", width, height, (0, 0, 0, 0)),
         E: create_block_texture("E", width, height, theme.empty),
         D: create_block_texture("D", width, height, theme.block_disable),
         I: create_block_texture("I", width, height, theme.block_i_normal),
@@ -176,3 +148,11 @@ def create_block_textures(width: int, height: int, theme: Theme) -> Dict[int, Te
         SC: create_block_texture("SC", width, height, theme.block_s_clear),
         ZC: create_block_texture("ZC", width, height, theme.block_z_clear),
     }
+
+
+def rotate_clockwise(shape: Matrix) -> Matrix:
+    # return [[shape[y][x] for y in range(len(shape))] for x in range(len(shape[0]) - 1, -1, -1)]
+    result = list()
+    for x in range(len(shape[0]) - 1, -1, -1):
+        result.append([shape[y][x] for y in range(len(shape))])
+    return result

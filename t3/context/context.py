@@ -12,7 +12,6 @@ from arcade.key import RIGHT as ARCADE_KEY_RIGHT
 from arcade.key import UP as ARCADE_KEY_UP
 from arcade.key import DOWN as ARCADE_KEY_DOWN
 
-from t3.assets.path import CATWALK_OGG_PATH
 from t3.objects.game import Game
 from t3.theme.flat import FlatTheme
 from t3.variables.block import BLOCK_WIDTH, BLOCK_HEIGHT, BLOCK_MARGIN
@@ -28,11 +27,6 @@ MUSIC_VOLUME: Final[float] = 0.3
 BACKGROUND_COLOR: Final[Tuple[int, int, int, int]] = (0x0c, 0x1b, 0x23, 0xFF)
 
 
-# def rotate_counterclockwise(shape):
-#     return [[shape[y][x] for y in range(len(shape))]
-#             for x in range(len(shape[0]) - 1, -1, -1)]
-#
-#
 # def remove_row(board, row):
 #     del board[row]
 #     return [[0 for _ in range(BOARD_COLS)]] + board
@@ -131,14 +125,15 @@ class Context(Window):
     @overrides
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         self._uis.on_key_press(symbol, modifiers)
+
         if symbol == ARCADE_KEY_LEFT:
-            self.move(-1)
+            self._game.move(-1)
         elif symbol == ARCADE_KEY_RIGHT:
-            self.move(1)
+            self._game.move(1)
         elif symbol == ARCADE_KEY_UP:
-            self.rotate_stone()
-        elif symbol == ARCADE_KEY_DOWN:
-            self.drop()
+            self._game.rotate()
+        # elif symbol == ARCADE_KEY_DOWN:
+        #     self.drop()
 
     @overrides
     def on_draw(self) -> None:

@@ -5,7 +5,7 @@ from typing import Optional
 
 from arcade import draw_text, draw_line
 
-from t3.objects.block import create_block_textures
+from t3.objects.block import N, create_block_textures, rotate_clockwise
 from t3.objects.board import Board
 from t3.objects.history import History
 from t3.objects.matrix import Matrix
@@ -49,14 +49,16 @@ class Game:
         self._game_over = False
         self._paused = False
 
-        self._cursor_block: Optional[Matrix] = None
+        self._cursor_matrix: Optional[Matrix] = None
+        self._cursor_board: Optional[Board] = None
         self._cursor_x = 0
+        self._cursor_y = 0
 
         self._stages = create_stages()
         self._stage = 0
 
-        self._board.set_matrix(self._stages[0].board)
-        self._board.update_textures()
+        self._board.set_matrix(self._stages[0].board[::-1])
+        # self._board.update_textures()
 
         self._history = History(
             4,
@@ -67,6 +69,8 @@ class Game:
             4,
             self._block_textures,
         )
+
+        self.next_block()
 
     def resize(self, width: float, height: float) -> None:
         half_width = width // 2
@@ -81,6 +85,7 @@ class Game:
             self._board.right + self._theme.margin_width,
             self._board.bottom,
         )
+        self.update_cursor()
 
     def update(self, delta_time: float) -> None:
         self._total_delta += delta_time
@@ -130,15 +135,62 @@ class Game:
         self._draw_border()
         self._draw_right_panel()
         self._history.draw()
+        self._cursor_board.draw()
 
-    # def new_stone(self):
-    #     self._current_block = choice(list(BLOCKS.values()))
-    #     self._current_block_x = int(BOARD_COLS / 2 - len(self._current_block[0]) / 2)
-    #     self._current_block_y = 0
-    #
-    #     if self._board.check_collision(self._current_block, (self._current_block_x, self._current_block_y)):
-    #         self._game_over = True
-    #
+    def next_block(self) -> None:
+        self._cursor_board = self._history.pop()
+        self._cursor_matrix = self._cursor_board.matrix
+
+        half_cols = self._board.cols // 2
+        half_cursor_block_cols = self._cursor_board.cols // 2
+        self._cursor_x = half_cols - half_cursor_block_cols
+        self._cursor_y = 0
+
+        self.update_cursor()
+
+    def update_cursor(self) -> None:
+        left = self._board.left
+        bottom = self._board.bottom
+        block_width = self._board.block_width
+        block_margin = self._board.block_margin
+        offset_x = left + (block_width + block_margin) * self._cursor_x
+        offset_y = bottom
+
+        self._cursor_board.update_offset(offset_x, offset_y)
+
+    def move(self, delta_x: int) -> None:
+        if self._cursor_board is None:
+            return
+
+        board_cols = self._board.cols
+        cursor_block_cols = self._cursor_board.cols
+        max_x = board_cols - cursor_block_cols
+        next_x = self._cursor_x + delta_x
+
+        if next_x < 0:
+            next_x = 0
+        if next_x > max_x:
+            next_x = max_x
+
+        cursor_matrix = self._cursor_board.matrix
+        if not self._board.check_collision(cursor_matrix, next_x, self._cursor_y):
+            self._cursor_x = next_x
+            self.update_cursor()
+
+    def rotate(self):
+        rotated_block = rotate_clockwise(self._cursor_board.matrix)
+        rotated_block_width = len(rotated_block[0])
+
+        board_cols = self._board.cols
+        if self._cursor_x + rotated_block_width >= board_cols:
+            next_x = board_cols - rotated_block_width
+        else:
+            next_x = self._cursor_x
+        if not self._board.check_collision(rotated_block, next_x, self._cursor_y):
+            self._cursor_board.set_matrix(rotated_block)
+            self._cursor_x = next_x
+            self.update_cursor()
+
     # def drop(self):
     #     if self._game_over:
     #         return
@@ -158,34 +210,10 @@ class Game:
     #                 break
     #         self._board.update()
     #         self.new_stone()
-    #
-    # def rotate_stone(self):
-    #     if not self._game_over and not self._paused:
-    #         new_stone = rotate_counterclockwise(self._current_block)
-    #         if self._current_block_x + len(new_stone[0]) >= BOARD_COLS:
-    #             self._current_block_x = BOARD_COLS - len(new_stone[0])
-    #         if not self._board.check_collision(new_stone, (self._current_block_x, self._current_block_y)):
-    #             self._current_block = new_stone
-    #
+
     # def update_drop(self, delta_time: float) -> None:
     #     self._drop_delta += delta_time
     #     if self._drop_delta >= self._drop_threshold:
     #         self._drop_delta %= self._drop_threshold
     #         assert self._drop_delta < self._drop_threshold
     #         self.drop()
-    #
-    # def move(self, delta_x: int) -> None:
-    #     if self._game_over:
-    #         return
-    #     if self._paused:
-    #         return
-    #
-    #     new_x = self._current_block_x + delta_x
-    #     if new_x < 0:
-    #         new_x = 0
-    #     if new_x > BOARD_COLS - len(self._current_block[0]):
-    #         new_x = BOARD_COLS - len(self._current_block[0])
-    #     if not self._board.check_collision(self._current_block, (new_x, self._current_block_y)):
-    #         self._current_block_x = new_x
-
-

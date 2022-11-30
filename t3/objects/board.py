@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 
 from arcade import SpriteList, Texture, Sprite
 
-from t3.objects.block import E
+from t3.objects.block import N, is_active_block
 from t3.objects.matrix import Matrix
 
 
@@ -17,6 +17,7 @@ class Board:
         block_height: int,
         block_margin: int,
         block_textures: Dict[int, Texture],
+        block_init: Optional[int] = None,
     ):
         assert rows > 0
         assert cols > 0
@@ -28,20 +29,25 @@ class Board:
         self._block_margin = block_margin
         self._offset_x = 0
         self._offset_y = 0
+        self._block_textures = block_textures
 
-        self._matrix = [[0 for _x in range(cols)] for _y in range(rows)]
+        init = block_init if block_init is not None else N
+        self._matrix = [[init for _x in range(cols)] for _y in range(rows)]
+        self._sprites = self.create_sprites()
 
-        self._sprites = SpriteList()
-        for y in range(rows):
-            for x in range(cols):
+    def create_sprites(self) -> SpriteList:
+        result = SpriteList()
+        for y in range(self._rows):
+            for x in range(self._cols):
                 sprite = Sprite()
-                for texture in block_textures.values():
+                for texture in self._block_textures.values():
                     sprite.append_texture(texture)
-                sprite.set_texture(E)
+                sprite.set_texture(self._matrix[y][x])
                 center = self.measure_block_center(x, y)
                 sprite.center_x = center[0]
                 sprite.center_y = center[1]
-                self._sprites.append(sprite)
+                result.append(sprite)
+        return result
 
     def measure_block_center(self, col: int, row: int) -> Tuple[float, float]:
         assert self._block_width > 0
@@ -59,6 +65,10 @@ class Board:
         center_y = top + (bh // 2)
 
         return center_x, center_y
+
+    @property
+    def matrix(self) -> Matrix:
+        return self._matrix
 
     @property
     def cols(self) -> int:
@@ -118,6 +128,33 @@ class Board:
     def bottom(self) -> int:
         return self._offset_y
 
+    @property
+    def bbox(self) -> Tuple[int, int, int, int]:
+        left, top, right, bottom = None, None, None, None
+
+        for row in range(self._rows):
+            any_active = False
+
+            for col in range(self._cols):
+                active = is_active_block(self._matrix[row][col])
+
+                if active:
+                    any_active = True
+                    if left is None:
+                        left = col
+                        right = col
+                    else:
+                        right = col
+
+            if any_active:
+                if bottom is None:
+                    bottom = row
+                    top = row
+                else:
+                    top = row
+
+        return left, top, right, bottom
+
     def as_sprite(self, col: int, row: int) -> Sprite:
         return self._sprites[self._cols * row + col]
 
@@ -125,7 +162,20 @@ class Board:
         self.as_sprite(col, row).set_texture(texture_index)
 
     def set_matrix(self, matrix: Matrix) -> None:
+        self._cols = len(matrix[0])
+        self._rows = len(matrix)
         self._matrix = matrix
+        self._sprites = self.create_sprites()
+
+    def join_matrix(self, matrix: Matrix, x=0, y=0) -> None:
+        for row, line in enumerate(matrix):
+            for col, val in enumerate(line):
+                self._matrix[row + y - 1][col + x] = val
+
+    def fill(self, value: int) -> None:
+        for row in range(self._rows):
+            for col in range(self._cols):
+                self._matrix[row][col] = value
 
     def update_offset(self, offset_x: int, offset_y: int) -> None:
         self._offset_x = offset_x
@@ -143,21 +193,15 @@ class Board:
             for col in range(self._cols):
                 self.set_texture(col, row, self._matrix[row][col])
 
-    def check_collision(self, shape, offset) -> bool:
-        off_x, off_y = offset
-        for cy, row in enumerate(shape):
-            for cx, cell in enumerate(row):
-                if cell is E:
+    def check_collision(self, shape: Matrix, offset_x: int, offset_y: int) -> bool:
+        for row, line in enumerate(shape):
+            for col, val in enumerate(line):
+                if not is_active_block(val):
                     continue
-                if self._matrix[cy + off_y][cx + off_x] is not E:
+                board_value = self._matrix[row + offset_y][col + offset_x]
+                if is_active_block(board_value):
                     return True
         return False
-
-    def join_matrix(self, matrix: Matrix, matrix_2_offset):
-        offset_x, offset_y = matrix_2_offset
-        for row, line in enumerate(matrix):
-            for col, val in enumerate(line):
-                self._matrix[row + offset_y - 1][col + offset_x] += val
 
     def draw(self) -> None:
         self._sprites.draw()

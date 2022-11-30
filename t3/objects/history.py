@@ -30,7 +30,6 @@ class History:
         self._offset_x = 0
         self._offset_y = 0
         self._boards = [self._create_board(block_textures) for _ in range(size)]
-        self._history = history
 
         for i in range(size):
             if i >= len(history):
@@ -64,3 +63,6 @@ class History:
     def draw(self) -> None:
         for board in self._boards:
             board.draw()
+
+    def pop(self) -> Board:
+        return self._boards.pop(0)
