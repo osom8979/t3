@@ -36,6 +36,10 @@ class History:
                 break
             self._boards[i].set_matrix(history[i])
 
+    @property
+    def size(self) -> int:
+        return len(self._boards)
+
     def _create_board(self, block_textures: Dict[int, Texture]) -> Board:
         return Board(
             History.PREVIEW_COLS,
@@ -65,4 +69,7 @@ class History:
             board.draw()
 
     def pop(self) -> Board:
-        return self._boards.pop(0)
+        result = self._boards.pop(0)
+        self.update_offset(self._offset_x, self._offset_y)
+        self.update_textures()
+        return result

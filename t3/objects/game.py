@@ -7,6 +7,7 @@ from typing import Optional, Tuple
 from arcade import draw_text, draw_line, draw_rectangle_outline
 
 from t3.objects.block import (
+    E,
     Matrix,
     create_block_textures,
     rotate_clockwise,
@@ -51,6 +52,8 @@ class Game:
         self._drop_delta = 0.0
         self._drop_threshold = 1.0
 
+        self._stage_clear = False
+        self._stage_failed = False
         self._game_over = False
         self._paused = False
 
@@ -94,6 +97,7 @@ class Game:
             self._board.bottom,
         )
         self.update_cursor()
+        self.update_hard_drop_matrix()
 
     def update(self, delta_time: float) -> None:
         self._total_delta += delta_time
@@ -214,15 +218,18 @@ class Game:
         if not self._board.check_collision(cursor_matrix, next_x, self._cursor_y):
             self._cursor_x = next_x
             self.update_cursor()
-            hard_drop_position = self.get_hard_drop_position()
-            if hard_drop_position is not None:
-                self._drop_matrix = deepcopy(self._cursor_board.matrix)
-                self._drop_x = hard_drop_position[0]
-                self._drop_y = hard_drop_position[1]
-            else:
-                self._drop_matrix = None
-                self._drop_x = 0
-                self._drop_y = 0
+            self.update_hard_drop_matrix()
+
+    def update_hard_drop_matrix(self) -> None:
+        hard_drop_position = self.get_hard_drop_position()
+        if hard_drop_position is not None:
+            self._drop_matrix = deepcopy(self._cursor_board.matrix)
+            self._drop_x = hard_drop_position[0]
+            self._drop_y = hard_drop_position[1]
+        else:
+            self._drop_matrix = None
+            self._drop_x = 0
+            self._drop_y = 0
 
     def rotate(self):
         rotated_block = rotate_clockwise(self._cursor_board.matrix)
@@ -237,6 +244,7 @@ class Game:
             self._cursor_board.set_matrix(rotated_block)
             self._cursor_x = next_x
             self.update_cursor()
+            self.update_hard_drop_matrix()
 
     def get_hard_drop_position(self) -> Optional[Tuple[int, int]]:
         cursor_matrix = self._cursor_board.matrix
@@ -249,3 +257,27 @@ class Game:
                 else:
                     return None
         return None
+
+    def hard_drop(self) -> None:
+        if self._drop_matrix is None:
+            return
+
+        self._board.fill_matrix(self._drop_matrix, self._drop_x, self._drop_y, E)
+        self._board.update_textures()
+
+        self._drop_matrix = None
+        self._drop_x = 0
+        self._drop_y = 0
+
+        if self._history.size >= 1:
+            self.next_block()
+            self._history.update_textures()
+        else:
+            self._cursor_board = None
+            self._cursor_x = 0
+            self._cursor_y = 0
+
+            if self._board.is_all_inactive():
+                self._stage_clear = True
+            else:
+                self._stage_failed = True

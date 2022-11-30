@@ -132,8 +132,8 @@ class Context(Window):
             self._game.move(1)
         elif symbol == ARCADE_KEY_UP:
             self._game.rotate()
-        # elif symbol == ARCADE_KEY_DOWN:
-        #     self.drop()
+        elif symbol == ARCADE_KEY_DOWN:
+            self._game.hard_drop()
 
     @overrides
     def on_draw(self) -> None:

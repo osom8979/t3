@@ -177,6 +177,13 @@ class Board:
             for col in range(self._cols):
                 self._matrix[row][col] = value
 
+    def is_all_inactive(self) -> bool:
+        for row in range(self._rows):
+            for col in range(self._cols):
+                if is_active_block(self._matrix[row][col]):
+                    return False
+        return True
+
     def update_offset(self, offset_x: int, offset_y: int) -> None:
         self._offset_x = offset_x
         self._offset_y = offset_y
@@ -192,6 +199,13 @@ class Board:
         for row in range(self._rows):
             for col in range(self._cols):
                 self.set_texture(col, row, self._matrix[row][col])
+
+    def fill_matrix(self, shape: Matrix, offset_x: int, offset_y: int, value=N) -> None:
+        for row, line in enumerate(shape):
+            for col, val in enumerate(line):
+                if not is_active_block(val):
+                    continue
+                self._matrix[row + offset_y][col + offset_x] = value
 
     def check_collision(self, shape: Matrix, offset_x: int, offset_y: int) -> bool:
         for row, line in enumerate(shape):
