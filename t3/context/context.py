@@ -5,7 +5,14 @@ from typing import Final, Tuple
 
 from PIL import Image
 
-from arcade import Sound, Window, Texture, set_background_color
+from arcade import (
+    Sound,
+    Window,
+    Texture,
+    set_background_color,
+    draw_rectangle_filled,
+    draw_rectangle_outline,
+)
 from arcade import run as arcade_run
 from arcade import exit as arcade_exit
 from arcade.gui import (
@@ -96,8 +103,12 @@ class Context(Window):
 
         self._show_exit_alert = False
         self._exit_alert = self._exit_alert_ui()
+
         self._main_buttons = self._create_ui()
         self._main_buttons.enable()
+
+        self._stage_clear_uis = self._create_stage_clear_ui()
+        self._stage_failed_uis = self._create_stage_failed_ui()
 
     def _exit_alert_ui(self) -> UIManager:
         uis = UIManager()
@@ -132,6 +143,64 @@ class Context(Window):
         @cancel_button.event("on_click")
         def on_click_exit(event):
             self.hide_exit_alert_dialog()
+
+        anchor = UIAnchorWidget(
+            anchor_x="center_x",
+            anchor_y="center_y",
+            child=v_box.with_space_around(left=8, top=8),
+        )
+        uis.add(anchor)
+        return uis
+
+    def _create_stage_clear_ui(self) -> UIManager:
+        uis = UIManager()
+        v_box = UIBoxLayout(x=0, y=0, vertical=True, align="center")
+        title = UILabel(
+            text="Complete !",
+            font_name=GOWUN_DODUM_FONT,
+            font_size=self._theme.title_size,
+            text_color=self._theme.foreground,
+            bold=True,
+        )
+        v_box.add(title)
+
+        message = UILabel(
+            text="Press any key to go to the next stage",
+            font_name=GOWUN_DODUM_FONT,
+            font_size=self._theme.subtitle_size,
+            text_color=self._theme.foreground,
+            bold=True,
+        )
+        v_box.add(message.with_space_around(top=8))
+
+        anchor = UIAnchorWidget(
+            anchor_x="center_x",
+            anchor_y="center_y",
+            child=v_box.with_space_around(left=8, top=8),
+        )
+        uis.add(anchor)
+        return uis
+
+    def _create_stage_failed_ui(self) -> UIManager:
+        uis = UIManager()
+        v_box = UIBoxLayout(x=0, y=0, vertical=True, align="center")
+        title = UILabel(
+            text="Failure",
+            font_name=GOWUN_DODUM_FONT,
+            font_size=self._theme.title_size,
+            text_color=self._theme.foreground,
+            bold=True,
+        )
+        v_box.add(title)
+
+        message = UILabel(
+            text="Press any key to restart",
+            font_name=GOWUN_DODUM_FONT,
+            font_size=self._theme.subtitle_size,
+            text_color=self._theme.foreground,
+            bold=True,
+        )
+        v_box.add(message.with_space_around(top=8))
 
         anchor = UIAnchorWidget(
             anchor_x="center_x",
@@ -176,6 +245,29 @@ class Context(Window):
         self._main_buttons.enable()
         self._exit_alert.disable()
 
+    def _draw_result_panel(self) -> None:
+        window_width, window_height = self.get_size()
+        window_half_width = window_width // 2
+        window_half_height = window_height // 2
+
+        panel_width = window_width + 10
+        panel_height = 200
+
+        draw_rectangle_filled(
+            center_x=window_half_width,
+            center_y=window_half_height,
+            width=panel_width,
+            height=panel_height,
+            color=self._theme.background,
+        )
+        draw_rectangle_outline(
+            center_x=window_half_width,
+            center_y=window_half_height,
+            width=panel_width,
+            height=panel_height,
+            color=self._theme.foreground,
+        )
+
     @property
     def debug(self) -> bool:
         return self._debug
@@ -195,9 +287,44 @@ class Context(Window):
         self._main_buttons.on_update(delta_time)
         self._game.update(delta_time)
 
+        if self._game.stage_clear:
+            self._main_buttons.disable()
+            self._game.disable_buttons()
+        elif self._game.stage_failed:
+            self._main_buttons.disable()
+            self._game.disable_buttons()
+
+    @overrides
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if self._game.stage_clear:
+            self._game.change_next_stage()
+            return
+
+        if self._game.stage_failed:
+            self._game.reset()
+            return
+
     @overrides
     def on_key_press(self, symbol: int, modifiers: int) -> None:
-        self._main_buttons.on_key_press(symbol, modifiers)
+        # self._main_buttons.on_key_press(symbol, modifiers)
+        # self._exit_alert.on_key_press(symbol, modifiers)
+        # self._stage_clear_uis.on_key_press(symbol, modifiers)
+        # self._stage_failed_uis.on_key_press(symbol, modifiers)
+
+        if self._game.stage_clear:
+            self._game.change_next_stage()
+            return
+
+        if self._show_exit_alert:
+            return
+
+        if self._game.stage_clear:
+            self._game.change_next_stage()
+            return
+
+        if self._game.stage_failed:
+            self._game.reset()
+            return
 
         if symbol == ARCADE_KEY_R:
             self._game.reset()
@@ -213,11 +340,20 @@ class Context(Window):
     @overrides
     def on_draw(self) -> None:
         self.clear()
+
         if self._show_exit_alert:
             self._exit_alert.draw()
-        else:
-            self._main_buttons.draw()
-            self._game.draw()
+            return
+
+        self._main_buttons.draw()
+        self._game.draw()
+
+        if self._game.stage_clear:
+            self._draw_result_panel()
+            self._stage_clear_uis.draw()
+        elif self._game.stage_failed:
+            self._draw_result_panel()
+            self._stage_failed_uis.draw()
 
     def run(self) -> None:
         arcade_run()

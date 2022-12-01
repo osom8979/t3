@@ -104,6 +104,20 @@ class Game:
 
         self.reset()
 
+    @property
+    def stage_clear(self) -> bool:
+        return self._stage_clear
+
+    @property
+    def stage_failed(self) -> bool:
+        return self._stage_failed
+
+    def enable_buttons(self) -> None:
+        return self._buttons.enable()
+
+    def disable_buttons(self) -> None:
+        return self._buttons.disable()
+
     def _create_buttons(self) -> UIManager:
         refresh_normal = Texture("RefreshNormal", Image.open(REFRESH_NORMAL_PATH))
         refresh_hovered = Texture("RefreshHovered", Image.open(REFRESH_HOVERED_PATH))
@@ -114,32 +128,32 @@ class Game:
             texture_pressed=refresh_pressed,
         )
 
-        left_normal = Texture("LeftNormal", Image.open(ARROW_LEFT_NORMAL_PATH))
-        left_hovered = Texture("LeftHovered", Image.open(ARROW_LEFT_HOVERED_PATH))
-        left_pressed = Texture("LeftPressed", Image.open(ARROW_LEFT_PRESSED_PATH))
-        left_button = UITextureButton(
-            texture=left_normal,
-            texture_hovered=left_hovered,
-            texture_pressed=left_pressed,
-        )
-
-        right_normal = Texture("RightNormal", Image.open(ARROW_RIGHT_NORMAL_PATH))
-        right_hovered = Texture("RightHovered", Image.open(ARROW_RIGHT_HOVERED_PATH))
-        right_pressed = Texture("RightPressed", Image.open(ARROW_RIGHT_PRESSED_PATH))
-        right_button = UITextureButton(
-            texture=right_normal,
-            texture_hovered=right_hovered,
-            texture_pressed=right_pressed,
-        )
-
         @refresh_button.event("on_click")
         def on_click_refresh(event):
             self.reset()
 
+        # right_normal = Texture("RightNormal", Image.open(ARROW_RIGHT_NORMAL_PATH))
+        # right_hovered = Texture("RightHovered", Image.open(ARROW_RIGHT_HOVERED_PATH))
+        # right_pressed = Texture("RightPressed", Image.open(ARROW_RIGHT_PRESSED_PATH))
+        # right_button = UITextureButton(
+        #     texture=right_normal,
+        #     texture_hovered=right_hovered,
+        #     texture_pressed=right_pressed,
+        # )
+
+        # left_normal = Texture("LeftNormal", Image.open(ARROW_LEFT_NORMAL_PATH))
+        # left_hovered = Texture("LeftHovered", Image.open(ARROW_LEFT_HOVERED_PATH))
+        # left_pressed = Texture("LeftPressed", Image.open(ARROW_LEFT_PRESSED_PATH))
+        # left_button = UITextureButton(
+        #     texture=left_normal,
+        #     texture_hovered=left_hovered,
+        #     texture_pressed=left_pressed,
+        # )
+
         v_box = UIBoxLayout(vertical=True, align="center")
         v_box.add(refresh_button)
-        v_box.add(left_button.with_space_around(top=4))
-        v_box.add(right_button.with_space_around(top=4))
+        # v_box.add(right_button.with_space_around(top=4))
+        # v_box.add(left_button.with_space_around(top=4))
 
         top_padding = (refresh_normal.height // 2) * len(v_box.children)
         right_padding = (refresh_normal.width // 2) + self._theme.margin_width
@@ -161,7 +175,13 @@ class Game:
     def reset(self) -> None:
         self.change_stage(self._stage)
 
+    def change_next_stage(self) -> None:
+        self.change_stage(self._stage + 1)
+
     def change_stage(self, stage_index: int) -> None:
+        self._stage_clear = False
+        self._stage_failed = False
+
         stage = self._stages[stage_index]
         self._board.set_matrix(deepcopy(stage.board[::-1]))
         self._history.set_history(deepcopy(stage.history))
