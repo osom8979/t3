@@ -123,6 +123,9 @@ class Game:
     def stage_failed(self) -> bool:
         return self._stage_failed
 
+    def is_empty_more_stage(self) -> bool:
+        return self._stage == 10
+
     def enable_buttons(self) -> None:
         return self._buttons.enable()
 
@@ -187,7 +190,15 @@ class Game:
         self.change_stage(self._stage)
 
     def change_next_stage(self) -> None:
+        if self._stage + 1 >= len(self._stages):
+            return
         self._stage += 1
+        self.change_stage(self._stage)
+
+    def change_prev_stage(self) -> None:
+        if self._stage - 1 < 0:
+            return
+        self._stage -= 1
         self.change_stage(self._stage)
 
     def change_stage(self, stage_index: int) -> None:

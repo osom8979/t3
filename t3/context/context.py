@@ -25,6 +25,8 @@ from arcade.gui import (
     UITextureButton,
 )
 from arcade.key import R as ARCADE_KEY_R
+from arcade.key import P as ARCADE_KEY_P
+from arcade.key import N as ARCADE_KEY_N
 from arcade.key import LEFT as ARCADE_KEY_LEFT
 from arcade.key import RIGHT as ARCADE_KEY_RIGHT
 from arcade.key import UP as ARCADE_KEY_UP
@@ -112,6 +114,7 @@ class Context(Window):
 
         self._stage_clear_uis = self._create_stage_clear_ui()
         self._stage_failed_uis = self._create_stage_failed_ui()
+        self._stage_complete_uis = self._create_stage_complete_ui()
 
         self._sfx_volume = 0.5
         self._error_sound = Sound(FUI_PING_TRIPLET_ECHO_PATH)
@@ -222,6 +225,35 @@ class Context(Window):
         uis.add(anchor)
         return uis
 
+    def _create_stage_complete_ui(self) -> UIManager:
+        uis = UIManager()
+        v_box = UIBoxLayout(x=0, y=0, vertical=True, align="center")
+        title = UILabel(
+            text="Thanks for playing",
+            font_name=GOWUN_DODUM_FONT,
+            font_size=self._theme.title_size,
+            text_color=self._theme.foreground,
+            bold=True,
+        )
+        v_box.add(title)
+
+        message = UILabel(
+            text="Press any key to exit",
+            font_name=GOWUN_DODUM_FONT,
+            font_size=self._theme.subtitle_size,
+            text_color=self._theme.foreground,
+            bold=True,
+        )
+        v_box.add(message.with_space_around(top=8))
+
+        anchor = UIAnchorWidget(
+            anchor_x="center_x",
+            anchor_y="center_y",
+            child=v_box.with_space_around(left=8, top=8),
+        )
+        uis.add(anchor)
+        return uis
+
     def _create_ui(self) -> UIManager:
         uis = UIManager()
         v_box = UIBoxLayout(x=0, y=0, vertical=True, align="left")
@@ -308,9 +340,12 @@ class Context(Window):
             self._game.disable_buttons()
 
     def next_stage(self) -> None:
-        self._game.change_next_stage()
-        self._main_buttons.enable()
-        self._game.enable_buttons()
+        if self._game.is_empty_more_stage():
+            self.close()
+        else:
+            self._game.change_next_stage()
+            self._main_buttons.enable()
+            self._game.enable_buttons()
 
     def reset_stage(self) -> None:
         self._game.reset()
@@ -350,6 +385,10 @@ class Context(Window):
 
         if symbol == ARCADE_KEY_R:
             self._game.reset()
+        if symbol == ARCADE_KEY_P:
+            self._game.change_prev_stage()
+        if symbol == ARCADE_KEY_N:
+            self._game.change_next_stage()
         if symbol == ARCADE_KEY_LEFT:
             self._game.move(-1)
         elif symbol == ARCADE_KEY_RIGHT:
@@ -372,7 +411,10 @@ class Context(Window):
 
         if self._game.stage_clear:
             self._draw_result_panel()
-            self._stage_clear_uis.draw()
+            if self._game.is_empty_more_stage():
+                self._stage_complete_uis.draw()
+            else:
+                self._stage_clear_uis.draw()
         elif self._game.stage_failed:
             self._draw_result_panel()
             self._stage_failed_uis.draw()

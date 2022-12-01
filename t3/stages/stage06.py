@@ -1,10 +1,33 @@
 # -*- coding: utf-8 -*-
 
 from t3.stages.stage import Stage
-from t3.objects.block import E, D, T, J, L, O, BLOCK_I, BLOCK_O, BLOCK_J, BLOCK_L, BLOCK_T, BLOCK_S, BLOCK_Z
+from t3.objects.block import E, D, I, O, J, L, T, S, Z, BLOCK_I, BLOCK_O, BLOCK_J, BLOCK_L, BLOCK_T, BLOCK_S, BLOCK_Z
 
 
 class Stage06(Stage):
+
+    _solver = [
+        [I, O, O, J, L, L, L, T, T, T],
+        [I, O, O, J, L, O, O, J, T, Z],
+        [I, T, J, J, T, O, O, J, Z, Z],
+        [I, T, T, T, T, T, J, J, Z, I],
+        [S, T, I, I, I, I, L, L, L, I],
+        [S, S, O, O, Z, Z, L, T, E, I],
+        [S, S, O, O, T, Z, Z, T, T, I],
+        [S, S, E, T, T, T, E, T, O, O],
+        [E, S, E, E, E, E, E, E, O, O],
+        [E, E, E, E, E, E, E, E, E, E],
+        [E, E, E, E, E, E, E, E, E, E],
+        [E, E, E, E, E, E, E, E, E, E],
+        [E, E, E, E, E, E, E, E, E, E],
+        [E, E, E, E, E, E, E, E, E, E],
+        [E, E, E, E, E, E, E, E, E, E],
+        [E, E, E, E, E, E, E, E, E, E],
+        [E, E, E, E, E, E, E, E, E, E],
+        [E, E, E, E, E, E, E, E, E, E],
+        [E, E, E, E, E, E, E, E, E, E],
+        [E, E, E, E, E, E, E, E, E, E],
+    ]
 
     board = [
         [D, D, D, J, D, D, D, T, T, T],

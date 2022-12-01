@@ -30,14 +30,14 @@ class Stage10(Stage):
     ]
 
     board = [
-        [D, D, D, E, D, D, D, D, D, D],
-        [D, D, D, D, D, D, D, E, D, D],
-        [D, D, E, D, D, D, D, D, D, D],
-        [D, D, D, D, D, D, D, D, D, E],
-        [D, D, D, D, D, E, D, D, D, D],
+        [D, D, D, E, D, D, I, D, D, D],
+        [D, D, D, D, D, D, I, E, D, D],
+        [D, D, E, D, D, D, I, D, D, D],
+        [D, D, T, D, D, D, I, D, D, E],
+        [D, T, T, T, D, E, D, D, D, D],
         [E, D, D, D, D, D, D, D, D, D],
         [D, D, D, D, E, D, D, E, D, D],
-        [D, D, D, D, D, D, D, D, D, D],
+        [D, D, D, D, I, I, I, I, D, D],
         [D, D, D, D, D, E, D, D, D, D],
         [E, E, D, E, E, D, D, D, E, E],
         [E, E, D, E, E, E, E, D, D, E],
