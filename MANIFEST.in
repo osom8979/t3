@@ -2,3 +2,4 @@ include requirements*.txt
 include README.md
 include LICENSE
 recursive-include t3/www *
+recursive-include t3/assets *
