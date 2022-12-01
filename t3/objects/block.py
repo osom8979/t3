@@ -65,21 +65,21 @@ BLOCK_T: Final[Matrix] = [
     [T, T, T],
     [N, T, N],
 ]
-BLOCK_L: Final[Matrix] = [
-    [N, N, L],
-    [L, L, L],
-]
 BLOCK_J: Final[Matrix] = [
-    [J, N, N],
+    [N, N, J],
     [J, J, J],
 ]
-BLOCK_S: Final[Matrix] = [
-    [N, S, S],
-    [S, S, N],
+BLOCK_L: Final[Matrix] = [
+    [L, N, N],
+    [L, L, L],
 ]
 BLOCK_Z: Final[Matrix] = [
-    [Z, Z, N],
     [N, Z, Z],
+    [Z, Z, N],
+]
+BLOCK_S: Final[Matrix] = [
+    [S, S, N],
+    [N, S, S],
 ]
 
 BLOCK_IC: Final[Matrix] = [
@@ -93,21 +93,21 @@ BLOCK_TC: Final[Matrix] = [
     [TC, TC, TC],
     [N, TC, N],
 ]
-BLOCK_LC: Final[Matrix] = [
-    [N, N, LC],
-    [LC, LC, LC],
-]
 BLOCK_JC: Final[Matrix] = [
-    [JC, N, N],
+    [N, N, JC],
     [JC, JC, JC],
 ]
-BLOCK_SC: Final[Matrix] = [
-    [N, SC, SC],
-    [SC, SC, N],
+BLOCK_LC: Final[Matrix] = [
+    [LC, N, N],
+    [LC, LC, LC],
 ]
 BLOCK_ZC: Final[Matrix] = [
-    [ZC, ZC, N],
     [N, ZC, ZC],
+    [ZC, ZC, N],
+]
+BLOCK_SC: Final[Matrix] = [
+    [SC, SC, N],
+    [N, SC, SC],
 ]
 
 

@@ -25,13 +25,13 @@ from t3.color.palette.flat_ui import (
 )
 from t3.variables.fonts import GOWUN_DODUM_FONT
 
-RED_ORANGE = (255, 63, 52, 255)
+_RED_ORANGE = (255, 63, 52, 255)
 
 
 class FlatTheme(Theme):
     background = MIDNIGHT_BLUE
     foreground = CLOUDS
-    accent = RED_ORANGE
+    accent = SILVER
 
     empty = WET_ASPHALT
     block_disable = ASBESTOS
@@ -62,5 +62,4 @@ class FlatTheme(Theme):
     history_size = 4
     history_cap_width = 4
 
-    reserve1 = CONCRETE
-    reserve2 = SILVER
+    _reserve1 = CONCRETE
