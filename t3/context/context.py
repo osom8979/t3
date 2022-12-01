@@ -35,6 +35,9 @@ from t3.assets.path import (
     EXIT_RUN_NORMAL_PATH,
     EXIT_RUN_HOVERED_PATH,
     EXIT_RUN_PRESSED_PATH,
+    FUI_PING_TRIPLET_ECHO_PATH,
+    BEATS_A_PATH,
+    MAGICAL_FOREST_PATH,
 )
 from t3.objects.game import Game
 from t3.theme.flat import FlatTheme
@@ -109,6 +112,15 @@ class Context(Window):
 
         self._stage_clear_uis = self._create_stage_clear_ui()
         self._stage_failed_uis = self._create_stage_failed_ui()
+
+        self._sfx_volume = 0.5
+        self._error_sound = Sound(FUI_PING_TRIPLET_ECHO_PATH)
+
+        # self._bgm_volume = 0.1
+        # self._bgm = Sound(MAGICAL_FOREST_PATH).play(self._bgm_volume, loop=True)
+
+    def play_error_sound(self) -> None:
+        self._error_sound.play(self._sfx_volume)
 
     def _exit_alert_ui(self) -> UIManager:
         uis = UIManager()
@@ -239,6 +251,7 @@ class Context(Window):
         self._show_exit_alert = True
         self._main_buttons.disable()
         self._exit_alert.enable()
+        self.play_error_sound()
 
     def hide_exit_alert_dialog(self) -> None:
         self._show_exit_alert = False

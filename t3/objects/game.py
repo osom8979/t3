@@ -6,7 +6,7 @@ from typing import Optional, Tuple
 
 from PIL import Image
 
-from arcade import Texture, draw_text, draw_line, draw_rectangle_outline
+from arcade import Sound, Texture, draw_text, draw_line, draw_rectangle_outline
 from arcade.gui import (
     UIAnchorWidget,
     UIBoxLayout,
@@ -16,6 +16,7 @@ from arcade.gui import (
     UILabel,
     UITextureButton,
 )
+
 
 from t3.assets.path import (
     REFRESH_NORMAL_PATH,
@@ -27,6 +28,10 @@ from t3.assets.path import (
     ARROW_RIGHT_NORMAL_PATH,
     ARROW_RIGHT_HOVERED_PATH,
     ARROW_RIGHT_PRESSED_PATH,
+    BUTTON_05_PATH,
+    FUI_PING_TRIPLET_ECHO_PATH,
+    WALLET_CLOSE_PATH,
+    MI_SFX_42_PATH,
 )
 from t3.objects.block import (
     E,
@@ -60,6 +65,8 @@ class Game:
             block_height,
             self._theme,
         )
+
+        self._sfx_volume = 0.5
 
         self._board = Board(
             board_cols,
@@ -103,6 +110,10 @@ class Game:
         )
 
         self.reset()
+
+        self._move_sound = Sound(WALLET_CLOSE_PATH)
+        self._error_sound = Sound(MI_SFX_42_PATH)
+        self._drop_sound = Sound(BUTTON_05_PATH)
 
     @property
     def stage_clear(self) -> bool:
@@ -247,6 +258,19 @@ class Game:
             anchor_y="top",
         )
 
+        next_top = top - 30
+        draw_text(
+            text=f"REMAIN {self._history.size}",
+            start_x=x + (self._board.block_margin * 2),
+            start_y=next_top,
+            color=self._theme.foreground,
+            font_size=self._theme.subtitle_size,
+            font_name=self._theme.font_name,
+            bold=True,
+            anchor_x="left",
+            anchor_y="top",
+        )
+
     def draw(self):
         self._board.draw()
         self._draw_border()
@@ -317,16 +341,25 @@ class Game:
         max_x = board_cols - cursor_block_cols
         next_x = self._cursor_x + delta_x
 
+        stop_flag = False
+
         if next_x < 0:
             next_x = 0
+            stop_flag = True
         if next_x > max_x:
             next_x = max_x
+            stop_flag = True
 
         cursor_matrix = self._cursor_board.matrix
         if not self._board.check_collision(cursor_matrix, next_x, self._cursor_y):
             self._cursor_x = next_x
             self.update_cursor()
             self.update_hard_drop_matrix()
+
+        if stop_flag:
+            self.play_error_sound()
+        else:
+            self.play_move_sound()
 
     def update_hard_drop_matrix(self) -> None:
         hard_drop_position = self.get_hard_drop_position()
@@ -353,6 +386,9 @@ class Game:
             self._cursor_x = next_x
             self.update_cursor()
             self.update_hard_drop_matrix()
+            self.play_move_sound()
+        else:
+            self.play_error_sound()
 
     def get_hard_drop_position(self) -> Optional[Tuple[int, int]]:
         cursor_matrix = self._cursor_board.matrix
@@ -366,9 +402,20 @@ class Game:
                     return None
         return None
 
+    def play_move_sound(self) -> None:
+        self._move_sound.play(self._sfx_volume)
+
+    def play_error_sound(self) -> None:
+        self._error_sound.play(self._sfx_volume)
+
+    def play_drop_sound(self) -> None:
+        self._drop_sound.play(self._sfx_volume)
+
     def hard_drop(self) -> None:
         if self._drop_matrix is None:
             return
+
+        self.play_drop_sound()
 
         self._board.fill_matrix(self._drop_matrix, self._drop_x, self._drop_y, E)
         self._board.update_textures()
