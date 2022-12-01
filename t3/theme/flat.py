@@ -57,4 +57,7 @@ class FlatTheme(Theme):
     border_width = 1
     margin_width = 10
 
+    history_size = 4
+    history_cap_width = 4
+
     reserve1 = CONCRETE

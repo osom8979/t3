@@ -151,7 +151,6 @@ def create_block_textures(width: int, height: int, theme: Theme) -> Dict[int, Te
 
 
 def rotate_clockwise(shape: Matrix) -> Matrix:
-    # return [[shape[y][x] for y in range(len(shape))] for x in range(len(shape[0]) - 1, -1, -1)]
     result = list()
     for x in range(len(shape[0]) - 1, -1, -1):
         result.append([shape[y][x] for y in range(len(shape))])

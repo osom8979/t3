@@ -44,8 +44,8 @@ class Board:
                     sprite.append_texture(texture)
                 sprite.set_texture(self._matrix[y][x])
                 center = self.measure_block_center(x, y)
-                sprite.center_x = center[0]
-                sprite.center_y = center[1]
+                sprite.center_x = self._offset_x + center[0]
+                sprite.center_y = self._offset_y + center[1]
                 result.append(sprite)
         return result
 

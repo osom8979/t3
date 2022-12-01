@@ -34,3 +34,6 @@ class Theme:
 
     border_width: int
     margin_width: int
+
+    history_size: int
+    history_cap_width: int

@@ -4,8 +4,30 @@ from copy import deepcopy
 from math import floor
 from typing import Optional, Tuple
 
-from arcade import draw_text, draw_line, draw_rectangle_outline
+from PIL import Image
 
+from arcade import Texture, draw_text, draw_line, draw_rectangle_outline
+from arcade.gui import (
+    UIAnchorWidget,
+    UIBoxLayout,
+    UIFlatButton,
+    UIManager,
+    UIMessageBox,
+    UILabel,
+    UITextureButton,
+)
+
+from t3.assets.path import (
+    REFRESH_NORMAL_PATH,
+    REFRESH_HOVERED_PATH,
+    REFRESH_PRESSED_PATH,
+    ARROW_LEFT_NORMAL_PATH,
+    ARROW_LEFT_HOVERED_PATH,
+    ARROW_LEFT_PRESSED_PATH,
+    ARROW_RIGHT_NORMAL_PATH,
+    ARROW_RIGHT_HOVERED_PATH,
+    ARROW_RIGHT_PRESSED_PATH,
+)
 from t3.objects.block import (
     E,
     Matrix,
@@ -68,19 +90,81 @@ class Game:
         self._stages = create_stages()
         self._stage = 0
 
-        self._board.set_matrix(self._stages[0].board[::-1])
-        # self._board.update_textures()
+        self._buttons = self._create_buttons()
+        self._buttons.enable()
 
         self._history = History(
-            4,
-            self._stages[0].history,
-            block_width,
-            block_height,
-            block_margin,
-            4,
+            self._theme.history_size,
+            self._board.block_width,
+            self._board.block_height,
+            self._board.block_margin,
+            self._theme.history_cap_width,
             self._block_textures,
         )
 
+        self.reset()
+
+    def _create_buttons(self) -> UIManager:
+        refresh_normal = Texture("RefreshNormal", Image.open(REFRESH_NORMAL_PATH))
+        refresh_hovered = Texture("RefreshHovered", Image.open(REFRESH_HOVERED_PATH))
+        refresh_pressed = Texture("RefreshPressed", Image.open(REFRESH_PRESSED_PATH))
+        refresh_button = UITextureButton(
+            texture=refresh_normal,
+            texture_hovered=refresh_hovered,
+            texture_pressed=refresh_pressed,
+        )
+
+        left_normal = Texture("LeftNormal", Image.open(ARROW_LEFT_NORMAL_PATH))
+        left_hovered = Texture("LeftHovered", Image.open(ARROW_LEFT_HOVERED_PATH))
+        left_pressed = Texture("LeftPressed", Image.open(ARROW_LEFT_PRESSED_PATH))
+        left_button = UITextureButton(
+            texture=left_normal,
+            texture_hovered=left_hovered,
+            texture_pressed=left_pressed,
+        )
+
+        right_normal = Texture("RightNormal", Image.open(ARROW_RIGHT_NORMAL_PATH))
+        right_hovered = Texture("RightHovered", Image.open(ARROW_RIGHT_HOVERED_PATH))
+        right_pressed = Texture("RightPressed", Image.open(ARROW_RIGHT_PRESSED_PATH))
+        right_button = UITextureButton(
+            texture=right_normal,
+            texture_hovered=right_hovered,
+            texture_pressed=right_pressed,
+        )
+
+        @refresh_button.event("on_click")
+        def on_click_refresh(event):
+            self.reset()
+
+        v_box = UIBoxLayout(vertical=True, align="center")
+        v_box.add(refresh_button)
+        v_box.add(left_button.with_space_around(top=4))
+        v_box.add(right_button.with_space_around(top=4))
+
+        top_padding = (refresh_normal.height // 2) * len(v_box.children)
+        right_padding = (refresh_normal.width // 2) + self._theme.margin_width
+        align_x = -1 * (self._board.half_width + right_padding)
+        align_y = self._board.half_height - top_padding
+
+        anchor = UIAnchorWidget(
+            anchor_x="center_x",
+            anchor_y="center_y",
+            align_x=align_x,
+            align_y=align_y,
+            child=v_box,
+        )
+
+        uis = UIManager()
+        uis.add(anchor)
+        return uis
+
+    def reset(self) -> None:
+        self.change_stage(self._stage)
+
+    def change_stage(self, stage_index: int) -> None:
+        stage = self._stages[stage_index]
+        self._board.set_matrix(deepcopy(stage.board[::-1]))
+        self._history.set_history(deepcopy(stage.history))
         self.next_block()
 
     def resize(self, width: float, height: float) -> None:
@@ -153,6 +237,8 @@ class Game:
 
         if self._drop_matrix is not None:
             self._draw_drop_matrix()
+
+        self._buttons.draw()
 
     def _draw_drop_matrix(self) -> None:
         assert self._drop_matrix is not None
@@ -278,6 +364,14 @@ class Game:
             self._cursor_y = 0
 
             if self._board.is_all_inactive():
-                self._stage_clear = True
+                self.on_stage_clear()
             else:
-                self._stage_failed = True
+                self.on_stage_failed()
+
+    def on_stage_clear(self) -> None:
+        self._stage_clear = True
+        self._stage_failed = False
+
+    def on_stage_failed(self) -> None:
+        self._stage_clear = False
+        self._stage_failed = True
