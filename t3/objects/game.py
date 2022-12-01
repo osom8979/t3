@@ -296,6 +296,7 @@ class Game:
         self._cursor_y = 0
 
         self.update_cursor()
+        self.update_hard_drop_matrix()
 
     def update_cursor(self) -> None:
         left = self._board.left

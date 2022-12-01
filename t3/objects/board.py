@@ -243,6 +243,13 @@ class Board:
                 board_value = self._matrix[row + offset_y][col + offset_x]
                 if is_active_block(board_value):
                     return False
+
+            # All spaces under `shape` in `board` should be empty
+            for y in range(offset_y - 1, -1, -1):
+                board_value = self._matrix[y][col + offset_x]
+                if is_active_block(board_value):
+                    return False
+
         return True
 
     def draw(self) -> None:
