@@ -294,14 +294,27 @@ class Context(Window):
             self._main_buttons.disable()
             self._game.disable_buttons()
 
+    def next_stage(self) -> None:
+        self._game.change_next_stage()
+        self._main_buttons.enable()
+        self._game.enable_buttons()
+
+    def reset_stage(self) -> None:
+        self._game.reset()
+        self._main_buttons.enable()
+        self._game.enable_buttons()
+
     @overrides
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
+        if self._show_exit_alert:
+            return
+
         if self._game.stage_clear:
-            self._game.change_next_stage()
+            self.next_stage()
             return
 
         if self._game.stage_failed:
-            self._game.reset()
+            self.reset_stage()
             return
 
     @overrides
@@ -311,19 +324,15 @@ class Context(Window):
         # self._stage_clear_uis.on_key_press(symbol, modifiers)
         # self._stage_failed_uis.on_key_press(symbol, modifiers)
 
-        if self._game.stage_clear:
-            self._game.change_next_stage()
-            return
-
         if self._show_exit_alert:
             return
 
         if self._game.stage_clear:
-            self._game.change_next_stage()
+            self.next_stage()
             return
 
         if self._game.stage_failed:
-            self._game.reset()
+            self.reset_stage()
             return
 
         if symbol == ARCADE_KEY_R:

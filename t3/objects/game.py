@@ -176,7 +176,8 @@ class Game:
         self.change_stage(self._stage)
 
     def change_next_stage(self) -> None:
-        self.change_stage(self._stage + 1)
+        self._stage += 1
+        self.change_stage(self._stage)
 
     def change_stage(self, stage_index: int) -> None:
         self._stage_clear = False
